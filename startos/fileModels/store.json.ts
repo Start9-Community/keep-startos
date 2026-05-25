@@ -7,10 +7,10 @@ import { defaultBunkerRelay, defaultFrostRelay } from '../utils'
 const storeConfigSchema = z.object({
   // Generated once at install; encrypts the Keep vault at rest.
   vaultPassword: z.string().catch(''),
-  // Relay where Nostr clients reach the NIP-46 bunker.
-  bunkerRelay: z.string().catch(defaultBunkerRelay),
-  // Relay used to coordinate FROST signing rounds with peer devices.
-  frostRelay: z.string().catch(defaultFrostRelay),
+  // Relays where Nostr clients reach the NIP-46 bunker.
+  bunkerRelays: z.array(z.string()).catch([defaultBunkerRelay]),
+  // Relays used to coordinate FROST signing rounds with peer devices.
+  frostRelays: z.array(z.string()).catch([defaultFrostRelay]),
   // The group npub to co-sign for. Empty = auto-detect the single imported
   // share's group.
   frostGroup: z.string().catch(''),

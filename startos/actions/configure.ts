@@ -3,25 +3,38 @@ import { i18n } from '../i18n'
 import { storeJson } from '../fileModels/store.json'
 import { defaultBunkerRelay, defaultFrostRelay } from '../utils'
 
-const { InputSpec, Value } = sdk
+const { InputSpec, Value, List } = sdk
+
+const relayPattern = {
+  regex: '^wss://.+',
+  description: 'Relay URLs must start with wss://',
+}
 
 const inputSpec = InputSpec.of({
-  bunkerRelay: Value.text({
-    name: i18n('Bunker Relay'),
-    description: i18n(
-      'Relay used for the NIP-46 bunker (where Nostr clients reach this signer)',
+  bunkerRelays: Value.list(
+    List.text(
+      {
+        name: i18n('Bunker Relays'),
+        description: i18n(
+          'Relays used for the NIP-46 bunker (where Nostr clients reach this signer)',
+        ),
+        default: [defaultBunkerRelay],
+      },
+      { patterns: [relayPattern], placeholder: 'wss://nos.lol' },
     ),
-    required: true,
-    default: defaultBunkerRelay,
-  }),
-  frostRelay: Value.text({
-    name: i18n('FROST Relay'),
-    description: i18n(
-      'Relay used to coordinate FROST signing rounds with your other devices',
+  ),
+  frostRelays: Value.list(
+    List.text(
+      {
+        name: i18n('FROST Relays'),
+        description: i18n(
+          'Relays used to coordinate FROST signing rounds with your other devices. These must match the relays your other share-holders use.',
+        ),
+        default: [defaultFrostRelay],
+      },
+      { patterns: [relayPattern], placeholder: 'wss://nos.lol' },
     ),
-    required: true,
-    default: defaultFrostRelay,
-  }),
+  ),
   frostGroup: Value.text({
     name: i18n('Group (npub)'),
     description: i18n(
@@ -43,9 +56,7 @@ export const configure = sdk.Action.withInput(
   'configure',
   async ({ effects }) => ({
     name: i18n('Configure'),
-    description: i18n(
-      'Configure the relays and policy for the FROST co-signer',
-    ),
+    description: i18n('Configure the relays and policy for the FROST co-signer'),
     warning: null,
     allowedStatuses: 'any',
     group: null,
@@ -55,16 +66,16 @@ export const configure = sdk.Action.withInput(
   async ({ effects }) => {
     const s = await storeJson.read().once()
     return {
-      bunkerRelay: s?.bunkerRelay ?? defaultBunkerRelay,
-      frostRelay: s?.frostRelay ?? defaultFrostRelay,
+      bunkerRelays: s?.bunkerRelays ?? [defaultBunkerRelay],
+      frostRelays: s?.frostRelays ?? [defaultFrostRelay],
       frostGroup: s?.frostGroup || null,
       autoApprove: s?.autoApprove ?? true,
     }
   },
   async ({ effects, input }) => {
     await storeJson.merge(effects, {
-      bunkerRelay: input.bunkerRelay,
-      frostRelay: input.frostRelay,
+      bunkerRelays: input.bunkerRelays,
+      frostRelays: input.frostRelays,
       frostGroup: input.frostGroup ?? '',
       autoApprove: input.autoApprove,
     })

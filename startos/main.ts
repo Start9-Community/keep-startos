@@ -16,8 +16,9 @@ export const main = sdk.setupMain(async ({ effects }) => {
     KEEP_WEB_LISTEN: `0.0.0.0:${uiPort}`,
     KEEP_WEB_UI_DIR: '/app/ui',
     KEEP_PASSWORD: store.vaultPassword,
-    KEEP_BUNKER_RELAY: store.bunkerRelay,
-    KEEP_FROST_RELAY: store.frostRelay,
+    // keep-web splits these on commas into a relay list.
+    KEEP_BUNKER_RELAY: store.bunkerRelays.join(','),
+    KEEP_FROST_RELAY: store.frostRelays.join(','),
     KEEP_FROST_AUTO_APPROVE: store.autoApprove ? 'true' : 'false',
   }
   // Optional explicit group; otherwise keep-web auto-resolves from the share.
