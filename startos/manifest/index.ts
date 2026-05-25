@@ -19,7 +19,7 @@ export const manifest = setupManifest({
       source: {
         dockerBuild: {},
       },
-      arch: ['x86_64', 'aarch64'],
+      arch: ['x86_64'],
     },
   },
   alerts: {
