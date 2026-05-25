@@ -1,0 +1,4 @@
+[submodule "keep"]
+	path = keep
+	url = https://github.com/privkeyio/keep.git
+	branch = keep-web-startos
