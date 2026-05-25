@@ -25,4 +25,4 @@ The `keep` git submodule pins the upstream source built into the image (`Dockerf
 - `Dockerfile` — multi-stage build: Rust (`keep-web`, release, wss-only) + Node (SPA) → slim runtime image.
 - `keep/` — upstream source as a git submodule.
 
-See [`docs/instructions.md`](docs/instructions.md) for setup and usage.
+See [`instructions.md`](instructions.md) for setup and usage.
