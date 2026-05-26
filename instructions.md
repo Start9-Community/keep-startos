@@ -10,9 +10,10 @@ Threshold signing needs enough devices online at the same moment. Phones sleep a
 
 ## First-time setup
 
-1. **Open the Web Admin** interface. Enter the admin token when prompted. The token is generated at install and printed to the service logs (look for "generated a random auth token"); copy it from there.
+1. **Get your login.** After install, run the **Show Login Credentials** action (also surfaced as a task) to see your Web Admin username and password. Open the Web Admin and sign in with them.
 2. **Import your share.** On a fresh install the Web Admin starts in setup mode, with no share loaded. Paste your FROST share export (a `kshare1…` string or JSON) and its passphrase. You create this export on the device that holds the group, for example Keep Android, Export Share, Show text or QR.
-3. **Restart the service.** Once a share is present, restarting starts the co-signer. It announces itself on the FROST relay and is ready to take part in signing rounds.
+3. **Restart the service.** Once a share is present, restarting starts the co-signer. It announces itself on the FROST relay, but stays in standby until you enable co-signing.
+4. **Enable co-signing.** Use the kill switch in the Web Admin to turn co-signing on (it ships off, fail-closed). The setting persists across restarts.
 
 After that, the Web Admin shows the bunker connection string (npub), the group, the threshold, and a live feed of signing activity.
 
@@ -23,9 +24,12 @@ Use the **Configure** action to set:
 - **Bunker Relays:** where Nostr clients reach this signer over NIP-46. Default `wss://nos.lol`.
 - **FROST Relays:** where signing rounds are coordinated with your other devices. These must match the relays your other devices use. Default `wss://nos.lol`.
 - **Group (npub):** optional. Leave blank to auto-detect the single imported share's group; set it only if the vault holds shares for more than one group.
-- **Auto co-sign:** on by default. The server takes part in signing rounds automatically within policy, while the human approval happens on your other device. Turn it off as a kill switch to make this node refuse to sign. You can also toggle this live in the Web Admin without a restart.
 
 Saving the configuration restarts the service.
+
+## Turning co-signing on and off
+
+Co-signing is controlled by the kill switch in the Web Admin, not the Configure action. A fresh install starts with co-signing **off** (fail-closed), so the node won't sign until you turn it on. Toggle it live in the Web Admin with no restart; the setting persists across restarts. While it's on, the node takes part in signing rounds automatically within policy, and the human approval happens on your other device.
 
 ## Connecting a Nostr client
 

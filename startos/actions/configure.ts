@@ -43,20 +43,13 @@ const inputSpec = InputSpec.of({
     required: false,
     default: null,
   }),
-  autoApprove: Value.toggle({
-    name: i18n('Auto co-sign'),
-    description: i18n(
-      'Automatically participate in signing rounds within policy (turn off as a kill switch)',
-    ),
-    default: true,
-  }),
 })
 
 export const configure = sdk.Action.withInput(
   'configure',
   async ({ effects }) => ({
     name: i18n('Configure'),
-    description: i18n('Configure the relays and policy for the FROST co-signer'),
+    description: i18n('Configure the relays and group for the FROST co-signer'),
     warning: null,
     allowedStatuses: 'any',
     group: null,
@@ -69,7 +62,6 @@ export const configure = sdk.Action.withInput(
       bunkerRelays: s?.bunkerRelays ?? [defaultBunkerRelay],
       frostRelays: s?.frostRelays ?? [defaultFrostRelay],
       frostGroup: s?.frostGroup || null,
-      autoApprove: s?.autoApprove ?? true,
     }
   },
   async ({ effects, input }) => {
@@ -77,7 +69,6 @@ export const configure = sdk.Action.withInput(
       bunkerRelays: input.bunkerRelays,
       frostRelays: input.frostRelays,
       frostGroup: input.frostGroup ?? '',
-      autoApprove: input.autoApprove,
     })
     await effects.restart()
     return {
