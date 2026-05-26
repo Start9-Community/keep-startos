@@ -25,4 +25,9 @@ The `keep` git submodule pins the upstream source built into the image (`Dockerf
 - `Dockerfile` — multi-stage build: Rust (`keep-web`, release, wss-only) + Node (SPA) → slim runtime image.
 - `keep/` — upstream source as a git submodule.
 
+## CI
+
+- **Build** (`.github/workflows/build.yml`): on PRs to `main` and manual dispatch, builds the `.s9pk` via Start9's shared workflow to verify it packs. Requires repo secret **`DEV_KEY`** (a StartOS developer key, `start-cli init-key`).
+- **Release** (`.github/workflows/release.yml`): on `v*.*` tags, builds and publishes. Requires `DEV_KEY` plus the registry/S3 vars (`RELEASE_REGISTRY`, `S3_S9PKS_BASE_URL`) and secrets (`S3_ACCESS_KEY`, `S3_SECRET_KEY`) when publishing to your own registry.
+
 See [`instructions.md`](instructions.md) for setup and usage.
