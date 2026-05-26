@@ -13,7 +13,7 @@ This package targets **StartOS 0.4.x** and uses the StartOS TypeScript SDK.
 ```sh
 git clone --recurse-submodules https://github.com/privkeyio/keep-startos
 cd keep-startos
-make            # produces keep.s9pk
+make            # produces keep_x86_64.s9pk (x86_64 only)
 make install    # installs to the host in ~/.startos/config.yaml
 ```
 
