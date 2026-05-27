@@ -21,8 +21,8 @@ After that, the Web Admin shows the bunker connection string (npub), the group, 
 
 Use the **Configure** action to set:
 
-- **Bunker Relays:** where Nostr clients reach this signer over NIP-46. Default `wss://nos.lol`.
-- **FROST Relays:** where signing rounds are coordinated with your other devices. These must match the relays your other devices use. Default `wss://nos.lol`.
+- **Bunker Relays:** where Nostr clients reach this signer over NIP-46. Default `wss://bucket.coracle.social`.
+- **FROST Relays:** where signing rounds are coordinated with your other devices. These must match the relays your other devices use. Default `wss://bucket.coracle.social`.
 - **Group (npub):** optional. Leave blank to auto-detect the single imported share's group; set it only if the vault holds shares for more than one group.
 
 Saving the configuration restarts the service.
