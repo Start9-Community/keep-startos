@@ -15,15 +15,15 @@ Threshold signing needs enough devices online at the same moment. Phones sleep a
 3. **Restart the service.** Once a share is present, restarting starts the co-signer. It announces itself on the FROST relay, but stays in standby until you enable co-signing.
 4. **Enable co-signing.** Use the kill switch in the Web Admin to turn co-signing on (it ships off, fail-closed). The setting persists across restarts.
 
-After that, the Web Admin shows the bunker connection string (npub), the group, the threshold, and a live feed of signing activity.
+After that, the Web Admin shows the bunker connection string (npub), the group, the threshold, and a live feed of signing activity. If you import shares for more than one group, the Shares section marks the active group and lets you switch which one the co-signer serves.
 
 ## Configuration
 
 Use the **Configure** action to set:
 
-- **Bunker Relays:** where Nostr clients reach this signer over NIP-46. Default `wss://nos.lol`.
-- **FROST Relays:** where signing rounds are coordinated with your other devices. These must match the relays your other devices use. Default `wss://nos.lol`.
-- **Group (npub):** optional. Leave blank to auto-detect the single imported share's group; set it only if the vault holds shares for more than one group.
+- **Bunker Relays:** where Nostr clients reach this signer over NIP-46. Default `wss://bucket.coracle.social`.
+- **FROST Relays:** where signing rounds are coordinated with your other devices. These must match the relays your other devices use. Default `wss://bucket.coracle.social`.
+- **Group (npub):** optional override. Leave blank and the co-signer serves your share's group automatically. If the vault holds shares for more than one group it auto-selects one (no crash) and you can switch which group is served from the Web Admin's Shares section. Set this only to pin a specific group.
 
 Saving the configuration restarts the service.
 

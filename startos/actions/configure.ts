@@ -20,7 +20,7 @@ const inputSpec = InputSpec.of({
         ),
         default: [defaultBunkerRelay],
       },
-      { patterns: [relayPattern], placeholder: 'wss://nos.lol' },
+      { patterns: [relayPattern], placeholder: 'wss://bucket.coracle.social' },
     ),
   ),
   frostRelays: Value.list(
@@ -32,7 +32,7 @@ const inputSpec = InputSpec.of({
         ),
         default: [defaultFrostRelay],
       },
-      { patterns: [relayPattern], placeholder: 'wss://nos.lol' },
+      { patterns: [relayPattern], placeholder: 'wss://bucket.coracle.social' },
     ),
   ),
   frostGroup: Value.text({
