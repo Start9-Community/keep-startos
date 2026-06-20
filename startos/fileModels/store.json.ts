@@ -1,18 +1,20 @@
 import { z, FileHelper } from '@start9labs/start-sdk'
 import { sdk } from '../sdk'
-import { defaultBunkerRelay, defaultFrostRelay } from '../utils'
+import { defaultRelays } from '../utils'
 
 // Package-internal state. Written only by our init + actions, so .const()
 // gives automatic restart-on-change.
 const storeConfigSchema = z.object({
   // Generated once at install; encrypts the Keep vault at rest.
   vaultPassword: z.string().catch(''),
-  // Generated once at install; bearer token for the Web Admin login.
-  webAuthToken: z.string().catch(''),
-  // Relays where Nostr clients reach the NIP-46 bunker.
-  bunkerRelays: z.array(z.string()).catch([defaultBunkerRelay]),
+  // Bearer token for the Web Admin login. Unset until the user runs the
+  // Set/Reset Web Admin Password action (recipe-admin-credentials).
+  webAuthToken: z.string().optional().catch(undefined),
+  // Relays where Nostr clients reach the NIP-46 bunker. At least one is
+  // required — keep-web's bunker will not start with an empty list.
+  bunkerRelays: z.array(z.string()).catch(defaultRelays),
   // Relays used to coordinate FROST signing rounds with peer devices.
-  frostRelays: z.array(z.string()).catch([defaultFrostRelay]),
+  frostRelays: z.array(z.string()).catch(defaultRelays),
   // The group npub to co-sign for. Empty = auto-detect the single imported
   // share's group.
   frostGroup: z.string().catch(''),

@@ -1,8 +1,2 @@
 .git
 .gitmodules
-node_modules
-javascript
-*.s9pk
-keep/target
-keep/keep-web/ui/node_modules
-keep/keep-web/ui/dist

@@ -1,41 +1,54 @@
 # Keep
 
-Keep turns your StartOS server into an always-on member of your FROST signing quorum. It holds one share of a multi-device key and coordinates with your other devices (phone, laptop) over Nostr relays to produce signatures. No single device, including this one, ever holds the whole key.
+> **Before you start:** Keep co-signs for a FROST group you created **somewhere else** (for example, the Keep Android app). This package holds and imports your share(s) of one or more such groups — it does not generate keys on its own. Have your share export ready.
 
-> **Important:** Keep only works as part of a multi-device FROST group you already created elsewhere (for example, the Keep Android app). This package imports one share of that group; it does not create keys on its own.
+## Documentation
 
-## Why run it on StartOS
+- [Keep usage guide](https://github.com/privkeyio/keep/blob/main/docs/USAGE.md) — exporting and importing shares, bunker mode, and signing.
+- [Keep security model](https://github.com/privkeyio/keep/blob/main/docs/SECURITY.md) — how the vault, keys, and FROST shares are protected.
+- [Keep upstream README](https://github.com/privkeyio/keep#readme) — project overview and features.
 
-Threshold signing needs enough devices online at the same moment. Phones sleep and drop connectivity, so two of them rarely line up. An always-on server fixes that: it is the reliably online co-signer, so signing from your other device works on demand instead of needing two devices awake at once. It also keeps signing nonces pre-staged for instant signatures.
+## What you get on StartOS
 
-## First-time setup
+- A **Web Admin** interface (the `ui` interface, reachable on your LAN) for importing your share, reading the bunker connection string, toggling co-signing, and watching signing activity.
+- An always-on **FROST co-signer** — the reliably online member of your quorum, so signing from your phone or laptop no longer needs two devices awake at once.
+- A **NIP-46 bunker** any Nostr client can point at to request signatures; Keep coordinates each one with your other devices over Nostr relays.
+- Your FROST share — one per group — held in an encrypted vault on the backed-up `main` volume.
 
-1. **Get your login.** After install, run the **Show Login Credentials** action (also surfaced as a task) to see your Web Admin username and password. Open the Web Admin and sign in with them.
-2. **Import your share.** On a fresh install the Web Admin starts in setup mode, with no share loaded. Paste your FROST share export (a `kshare1…` string or JSON) and its passphrase. You create this export on the device that holds the group, for example Keep Android, Export Share, Show text or QR.
-3. **Restart the service.** Once a share is present, restarting starts the co-signer. It announces itself on the FROST relay, but stays in standby until you enable co-signing.
-4. **Enable co-signing.** Use the kill switch in the Web Admin to turn co-signing on (it ships off, fail-closed). The setting persists across restarts.
+## Getting set up
 
-After that, the Web Admin shows the bunker connection string (npub), the group, the threshold, and a live feed of signing activity. If you import shares for more than one group, the Shares section marks the active group and lets you switch which one the co-signer serves.
+You need an existing FROST group and a share export from the device that created it (e.g. Keep Android → Export Share → show text or QR).
 
-## Configuration
+1. **Set your login.** On install, StartOS prompts you with a critical **Set Web Admin Password** action. Run it, save the generated password to your password manager, and use it to sign in — the username is `admin`. Run the same action any time to rotate the password.
+2. **Import your share.** Open the **Web Admin**. On a fresh install it starts in setup mode with no share loaded. Paste your FROST share export (a `kshare1…` string or JSON) and its passphrase.
+3. **Restart Keep.** The co-signer loads your share at startup, so restart the service once the share is imported. It then announces itself on your FROST relay and waits in standby.
+4. **Enable co-signing.** Co-signing ships **off** (fail-closed). Flip the kill switch in the Web Admin to turn it on; the setting persists across restarts.
 
-Use the **Configure** action to set:
+Once it's running, the Web Admin shows your bunker connection string (npub), the group, the threshold, and a live feed of signing activity. If you import shares for more than one group, the Shares section marks the active group and lets you switch which one the co-signer serves.
 
-- **Bunker Relays:** where Nostr clients reach this signer over NIP-46. Default `wss://bucket.coracle.social`.
-- **FROST Relays:** where signing rounds are coordinated with your other devices. These must match the relays your other devices use. Default `wss://bucket.coracle.social`.
-- **Group (npub):** optional override. Leave blank and the co-signer serves your share's group automatically. If the vault holds shares for more than one group it auto-selects one (no crash) and you can switch which group is served from the Web Admin's Shares section. Set this only to pin a specific group.
+## Using Keep
 
-Saving the configuration restarts the service.
+### Web Admin
 
-## Turning co-signing on and off
+Sign in with the username `admin` and the password from **Set Web Admin Password**. The Web Admin is where you import your share(s), read your bunker connection string, flip the co-signing kill switch, switch the active group in the Shares section, and watch signing activity.
 
-Co-signing is controlled by the kill switch in the Web Admin, not the Configure action. A fresh install starts with co-signing **off** (fail-closed), so the node won't sign until you turn it on. Toggle it live in the Web Admin with no restart; the setting persists across restarts. While it's on, the node takes part in signing rounds automatically within policy, and the human approval happens on your other device.
+### Co-signing kill switch
 
-## Connecting a Nostr client
+Co-signing is controlled by the kill switch in the Web Admin, not by an action. Toggle it live with no restart; it persists across restarts. While it's on, Keep joins signing rounds automatically within policy — the human approval still happens on your other device.
 
-Point any NIP-46 ("bunker") capable Nostr client at the bunker connection string shown in the Web Admin. When the client requests a signature, this node coordinates a FROST round with your other devices to produce it.
+### Connecting a Nostr client
+
+Point any NIP-46 ("bunker") capable Nostr client at the connection string shown in the Web Admin. When the client requests a signature, Keep coordinates a FROST round with your other devices to produce it.
+
+### Actions
+
+- **Set Web Admin Password** — generate or rotate the Web Admin password. Surfaced as a critical task on a fresh install.
+- **Configure** — set the relays and group Keep uses:
+  - **Bunker Relays** — where Nostr clients reach this signer over NIP-46. Pre-filled with `wss://bucket.coracle.social`; keep at least one.
+  - **FROST Relays** — where signing rounds are coordinated with your other devices; these must match the relays your other devices use. Pre-filled with `wss://bucket.coracle.social`, which reliably carries the rapid FROST signing traffic that most general-purpose relays drop; keep at least one.
+  - **Group (npub)** — optional override. Leave blank and the co-signer serves your share's group automatically; with shares for more than one group it auto-selects one and you can switch which is served from the Web Admin's Shares section. Set this only to pin a specific group.
 
 ## Security notes
 
-- The vault is encrypted at rest with a password generated at install and stored in this package's data volume, which is captured by StartOS backups. Because the service runs unattended, the share is decrypted in memory while it runs. That is the trade-off for an always-on signer.
-- This node holds only one share. Compromising it alone cannot sign or reconstruct your key; an attacker would still need to reach the threshold using your other devices.
+- Because Keep runs unattended, your share is decrypted in memory while the service is running. That is the trade-off for an always-on signer.
+- This server holds only one share of any group — compromising it alone cannot sign or reconstruct a key; an attacker would still need to reach the threshold using your other devices.

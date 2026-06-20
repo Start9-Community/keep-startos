@@ -1,7 +1,7 @@
 import { sdk } from '../sdk'
 import { configure } from './configure'
-import { showLoginCredentials } from './showLoginCredentials'
+import { setWebAdminPassword } from './setWebAdminPassword'
 
 export const actions = sdk.Actions.of()
   .addAction(configure)
-  .addAction(showLoginCredentials)
+  .addAction(setWebAdminPassword)
