@@ -1,13 +1,17 @@
 import { sdk } from '../sdk'
 import { i18n } from '../i18n'
 import { storeJson } from '../fileModels/store.json'
-import { defaultBunkerRelay, defaultFrostRelay } from '../utils'
+import { defaultRelays, maxRelays, maxRelayUrlLength } from '../utils'
 
 const { InputSpec, Value, List } = sdk
 
+// Mirror upstream keep-core `validate_relay_url`'s key rules: wss:// scheme, a
+// non-empty host, and no whitespace or userinfo (a malformed relay would crash
+// the co-signer when keep-web calls add_relay). Private/loopback hosts can't be
+// caught in a regex; upstream rejects those at connect time.
 const relayPattern = {
-  regex: '^wss://.+',
-  description: 'Relay URLs must start with wss://',
+  regex: '^wss://[^\\s@]+$',
+  description: 'Must be a wss:// relay URL with no spaces, e.g. wss://relay.example.com',
 }
 
 const inputSpec = InputSpec.of({
@@ -16,11 +20,17 @@ const inputSpec = InputSpec.of({
       {
         name: i18n('Bunker Relays'),
         description: i18n(
-          'Relays used for the NIP-46 bunker (where Nostr clients reach this signer)',
+          'Relays used for the NIP-46 bunker (where Nostr clients reach this signer). At least one is required.',
         ),
-        default: [defaultBunkerRelay],
+        default: defaultRelays,
+        minLength: 1,
+        maxLength: maxRelays,
       },
-      { patterns: [relayPattern], placeholder: 'wss://bucket.coracle.social' },
+      {
+        patterns: [relayPattern],
+        placeholder: 'wss://bucket.coracle.social',
+        maxLength: maxRelayUrlLength,
+      },
     ),
   ),
   frostRelays: Value.list(
@@ -28,11 +38,17 @@ const inputSpec = InputSpec.of({
       {
         name: i18n('FROST Relays'),
         description: i18n(
-          'Relays used to coordinate FROST signing rounds with your other devices. These must match the relays your other share-holders use.',
+          'Relays used to coordinate FROST signing rounds with your other devices. These must match the relays your other share-holders use. At least one is required.',
         ),
-        default: [defaultFrostRelay],
+        default: defaultRelays,
+        minLength: 1,
+        maxLength: maxRelays,
       },
-      { patterns: [relayPattern], placeholder: 'wss://bucket.coracle.social' },
+      {
+        patterns: [relayPattern],
+        placeholder: 'wss://bucket.coracle.social',
+        maxLength: maxRelayUrlLength,
+      },
     ),
   ),
   frostGroup: Value.text({
@@ -59,8 +75,8 @@ export const configure = sdk.Action.withInput(
   async ({ effects }) => {
     const s = await storeJson.read().once()
     return {
-      bunkerRelays: s?.bunkerRelays ?? [defaultBunkerRelay],
-      frostRelays: s?.frostRelays ?? [defaultFrostRelay],
+      bunkerRelays: s?.bunkerRelays?.length ? s.bunkerRelays : defaultRelays,
+      frostRelays: s?.frostRelays?.length ? s.frostRelays : defaultRelays,
       frostGroup: s?.frostGroup || null,
     }
   },

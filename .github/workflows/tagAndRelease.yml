@@ -1,14 +1,19 @@
-name: Release
+name: Tag and Release
 
 on:
   push:
-    tags:
-      - 'v*.*'
+    branches: ['main']
+    paths-ignore: ['*.md']
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  release:
-    uses: start9labs/shared-workflows/.github/workflows/release.yml@master
+  tag:
+    uses: start9labs/shared-workflows/.github/workflows/tagAndRelease.yml@master
     with:
+      REFERENCE_REGISTRY: ${{ vars.REFERENCE_REGISTRY }}
       FREE_DISK_SPACE: true # keep-web compiles Rust + the Vite UI from source
       RELEASE_REGISTRY: ${{ vars.RELEASE_REGISTRY }}
       S3_S9PKS_BASE_URL: ${{ vars.S3_S9PKS_BASE_URL }}

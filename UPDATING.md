@@ -21,7 +21,7 @@ cd keep && awk -F'"' '/^version/ {print $2; exit}' Cargo.toml
    cd .. && git add keep
    ```
 
-2. Update `startos/versions/` — set `version` (and `releaseNotes`) to match. Rename the version file to the new version string if you want the old notes preserved in git history.
+2. Update `startos/versions/current.ts` — set `version` (and `releaseNotes`) to match. The latest version always lives in `current.ts`, so an in-place edit is all most bumps need; spin off a new version file only when the bump carries a migration (see [Versions](https://docs.start9.com/packaging/versions.html)).
 
 3. Rebuild and sideload to smoke-test:
 
