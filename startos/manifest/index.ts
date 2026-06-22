@@ -5,9 +5,9 @@ export const manifest = setupManifest({
   id: 'keep',
   title: 'Keep',
   license: 'MIT',
-  packageRepo: 'https://github.com/privkeyio/keep-startos',
+  packageRepo: 'https://github.com/Start9-Community/keep-startos',
   upstreamRepo: 'https://github.com/privkeyio/keep',
-  marketingUrl: 'https://github.com/privkeyio/keep',
+  marketingUrl: 'https://privkey.io',
   donationUrl: null,
   description: {
     short,
