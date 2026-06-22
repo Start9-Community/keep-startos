@@ -1,7 +1,7 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '0.4.8:0',
+  version: '0.4.8:1',
   releaseNotes: {
     en_US:
       'Initial release of Keep, the always-on FROST co-signer, for StartOS.',
