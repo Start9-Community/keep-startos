@@ -39,7 +39,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
   // Optional explicit group; otherwise keep-web auto-resolves from the share.
   if (store.frostGroup) env.KEEP_FROST_GROUP = store.frostGroup
 
-  const subcontainer = await sdk.SubContainer.of(
+  const subcontainer = sdk.SubContainer.of(
     effects,
     { imageId: 'keep' },
     sdk.Mounts.of().mountVolume({

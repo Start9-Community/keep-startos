@@ -1,10 +1,13 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '0.5.0:0',
+  version: '0.5.0:1',
   releaseNotes: {
-    en_US:
-      'Updates Keep to v0.5.0: threshold-OPRF vault unlock with TPM remote attestation, HD FROST wallets (BIP-32 / BIP-86), a software distributed-key-generation path, and substantial signing and cryptographic hardening.',
+    en_US: 'Internal updates (start-sdk 2.0.x).',
+    es_ES: 'Actualizaciones internas (start-sdk 2.0.x).',
+    de_DE: 'Interne Aktualisierungen (start-sdk 2.0.x).',
+    pl_PL: 'Aktualizacje wewnętrzne (start-sdk 2.0.x).',
+    fr_FR: 'Mises à jour internes (start-sdk 2.0.x).',
   },
   migrations: {
     up: async ({ effects }) => {},
