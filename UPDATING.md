@@ -2,7 +2,7 @@
 
 Keep is built from the `keep/` git submodule (`https://github.com/privkeyio/keep.git`); the root `Dockerfile` compiles the `keep-web` crate (Rust, release, default features = wss-only) and builds its Svelte SPA. There is no `dockerTag` in the manifest — the image is built fresh from whatever commit the submodule points at.
 
-The submodule currently tracks the `keep-web-startos` branch (where `keep-web` lives). Once that work merges to `keep`'s `main`, repoint the submodule to a tag or a `main` commit for reproducibility.
+The submodule tracks `main` and is pinned to a release tag (currently `v0.7.5`) for reproducibility. `keep-web` and its Svelte SPA live at the repo root on `main`; the old `keep-web-startos` branch no longer exists.
 
 ## Determining the upstream version
 
