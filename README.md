@@ -177,7 +177,7 @@ None.
 ## Limitations and Differences
 
 1. **x86_64 only** — `keep-web` is built for x86_64; there is no aarch64 or riscv64 image.
-2. **Requires an existing FROST group** — this package imports shares; it does not run key generation. Create the group and export a share elsewhere (e.g. Keep Android) first.
+2. **Requires an existing FROST group** — this package imports shares; it does not run key generation. Create the group and export a share elsewhere (the Keep CLI or desktop app) first. The Keep Android app also holds a share rather than generating the group.
 3. **Co-signing is off by default** — fail-closed; enable it with the Web Admin kill switch.
 4. **Share import is Web-Admin-only** — the upstream CLI and enclave paths are not exposed; import in setup mode, then restart so the co-signer starts.
 

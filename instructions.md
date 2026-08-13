@@ -1,6 +1,6 @@
 # Keep
 
-> **Before you start:** Keep co-signs for a FROST group you created **somewhere else** (for example, the Keep Android app). This package holds and imports your share(s) of one or more such groups — it does not generate keys on its own. Have your share export ready.
+> **Before you start:** Keep co-signs for a FROST group you created **somewhere else** (the Keep CLI or desktop app). This package holds and imports your share(s) of one or more such groups — it does not generate keys on its own. Have your share export ready.
 
 ## Documentation
 
