@@ -4,13 +4,17 @@
 
 # Keep on StartOS
 
-> **Upstream docs:** <https://github.com/privkeyio/keep>
->
 > Everything not listed in this document should behave the same as upstream
 > Keep. If a feature, setting, or behavior is not mentioned here, the upstream
-> documentation is accurate and fully applicable.
+> documentation is accurate and fully applicable — see the Documentation
+> section of `instructions.md` for links.
 
-[Keep](https://github.com/privkeyio/keep) is a self-custodial key manager for Nostr and Bitcoin. This package runs its [`keep-web`](https://github.com/privkeyio/keep/tree/main/keep-web) daemon as an always-on FROST threshold co-signer: it holds one share of a multi-device key and coordinates signatures with your other devices over Nostr relays, so no single device ever holds the whole key.
+[Keep](https://github.com/privkeyio/keep) is a FROST co-signer for Nostr: it holds one share of a threshold key and takes part in signing rounds, so no single device holds the whole key. This package runs the co-signer as an always-on participant, encrypts its vault at rest, and serves a NIP-46 bunker that Nostr clients connect to.
+
+**It does not generate keys.** The group is created elsewhere, and this package imports a share of it.
+
+- **Upstream repo:** <https://github.com/privkeyio/keep>
+- **Wrapper repo:** <https://github.com/Start9-Community/keep-startos>
 
 ---
 
@@ -18,184 +22,158 @@
 
 - [Image and Container Runtime](#image-and-container-runtime)
 - [Volume and Data Layout](#volume-and-data-layout)
-- [Installation and First-Run Flow](#installation-and-first-run-flow)
-- [Configuration Management](#configuration-management)
-- [Network Access and Interfaces](#network-access-and-interfaces)
-- [Actions (StartOS UI)](#actions-startos-ui)
+- [File Models](#file-models)
 - [Dependencies](#dependencies)
-- [Backups and Restore](#backups-and-restore)
+- [Network Access and Interfaces](#network-access-and-interfaces)
+- [Installation and First-Run Flow](#installation-and-first-run-flow)
+- [Actions](#actions)
+- [Tasks](#tasks)
 - [Health Checks](#health-checks)
+- [Backups and Restore](#backups-and-restore)
 - [Limitations and Differences](#limitations-and-differences)
-- [What Is Unchanged from Upstream](#what-is-unchanged-from-upstream)
-- [Contributing](#contributing)
 - [Quick Reference for AI Consumers](#quick-reference-for-ai-consumers)
 
 ---
 
 ## Image and Container Runtime
 
-| Property      | Value                                                                                             |
-| ------------- | ------------------------------------------------------------------------------------------------- |
-| Image         | `keep` — built from source via the root `Dockerfile`                                              |
-| Source        | `keep` git submodule (upstream `keep-web` crate + Svelte admin SPA)                               |
-| Build         | Rust release (`keep-web`, default features = wss-only) + Vite/Svelte UI, on a slim Debian runtime |
-| Architectures | x86_64                                                                                            |
-| Entrypoint    | `/app/keep-web`                                                                                   |
+One image, built here.
 
----
+| Property      | Value                                              |
+| ------------- | -------------------------------------------------- |
+| Image         | Built from this repo's `Dockerfile`                |
+| Architectures | x86_64 only                                        |
+| Command       | The web binary, configured entirely by environment |
+
+| Subcontainer    | Purpose                                  |
+| --------------- | ---------------------------------------- |
+| `keep-cosigner` | The only daemon — the one to `attach` to |
+
+**The application takes no config file at all** — every setting reaches it as an environment variable, which is why the package's store is the whole of its configuration.
 
 ## Volume and Data Layout
 
-| Volume | Mount Point | Purpose                              |
-| ------ | ----------- | ------------------------------------ |
-| `main` | `/data`     | Encrypted vault and StartOS settings |
+One volume, and what is on it is the point.
 
-**Key paths on the `main` volume:**
+| Volume | Mount Point | Purpose                           |
+| ------ | ----------- | --------------------------------- |
+| `main` | `/data`     | The encrypted vault and the store |
 
-- `/data/vault` — the encrypted Keep vault: your FROST share(s), signing state, and the persisted co-signing kill-switch flag
-- `/data/start9/store.json` — StartOS persistent settings: vault password, Web Admin token, bunker/FROST relays, optional group
+**The vault holds your FROST share**, encrypted at rest with a password the package generates. It is deliberately placed under the mounted volume so it is captured by backups — see [Backups and Restore](#backups-and-restore), because the two halves of that encryption travel together.
 
----
+## File Models
 
-## Installation and First-Run Flow
+One model, and it is the entire configuration surface.
 
-| Step            | Upstream                | StartOS                                                     |
-| --------------- | ----------------------- | ----------------------------------------------------------- |
-| Vault creation  | Manual (`keep` CLI)     | Auto-created at `/data/vault` on first start                |
-| Vault password  | User-supplied           | Auto-generated internal secret (never shown)                |
-| Web Admin login | Token logged at startup | Generated and rotated via the Set Web Admin Password action |
-| Share import    | CLI / app               | Pasted into the Web Admin in setup mode                     |
+| File                | Format | Modelled                | Written by           |
+| ------------------- | ------ | ----------------------- | -------------------- |
+| `start9/store.json` | JSON   | Yes — `FileHelper.json` | Init and the actions |
 
-**First-run steps:**
+- **`vaultPassword`** — generated once **at install only**, never shown, and never regenerated. It encrypts the vault at rest. The install-only gate is what stops a restore overwriting the password that its restored vault was encrypted with.
+- **`webAuthToken`** — the Web Admin credential, unset until the action creates it.
+- **`bunkerRelays` / `frostRelays`** — the two relay lists.
+- **`frostGroup`** — an optional explicit group; left empty, the application resolves it from the imported share.
 
-1. A critical task prompts you to run **Set Web Admin Password**; copy the generated password and sign in (username `admin`).
-2. Open the **Web Admin** and import your FROST share (a `kshare1…` export from the device that created the group).
-3. Restart the service so `keep-web` loads the share and starts the co-signer.
-4. Flip the co-signing kill switch in the Web Admin (ships off, fail-closed).
+Everything is read reactively, so any change restarts the co-signer onto it.
 
-See [instructions.md](instructions.md) for the user-facing walkthrough.
+**The relay lists can never be empty**, and that is enforced twice: the form requires at least one, and `main` falls back to the default set if the store somehow holds none. The application's bunker refuses to start with an empty relay list, so an empty list would crash the co-signer rather than degrade it.
 
----
-
-## Configuration Management
-
-| StartOS-Managed                                          | Upstream-Managed (Web Admin)                             |
-| -------------------------------------------------------- | -------------------------------------------------------- |
-| Vault path, listen address, UI dir (env)                 | FROST share import                                       |
-| Vault password (auto-generated internal secret)          | Co-signing kill switch                                   |
-| Web Admin token (Set Web Admin Password action)          | Signing policy / per-request approvals                   |
-| Bunker & FROST relays, optional group (Configure action) | Active-group selection (with shares for multiple groups) |
-
-**Environment variables set by StartOS** (`startos/main.ts`):
-
-| Variable              | Value                 | Purpose                                                                                      |
-| --------------------- | --------------------- | -------------------------------------------------------------------------------------------- |
-| `KEEP_PATH`           | `/data/vault`         | Vault location (on the backed-up `main` volume)                                              |
-| `KEEP_WEB_LISTEN`     | `0.0.0.0:8080`        | Web Admin bind address                                                                       |
-| `KEEP_WEB_UI_DIR`     | `/app/ui`             | Built Svelte admin SPA                                                                       |
-| `KEEP_PASSWORD`       | (auto-generated)      | Vault encryption password                                                                    |
-| `KEEP_WEB_AUTH_TOKEN` | (set by action)       | Web Admin bearer token; omitted until set                                                    |
-| `KEEP_BUNKER_RELAY`   | (Configure)           | NIP-46 bunker relays, comma-separated                                                        |
-| `KEEP_FROST_RELAY`    | (Configure)           | FROST coordination relays, comma-separated                                                   |
-| `KEEP_FROST_GROUP`    | (Configure, optional) | Pins a specific group npub; omitted → auto-select (switch the active group in the Web Admin) |
-
-Single-key mode (`KEEP_ALLOW_SINGLE_KEY`) and env-level auto-approve (`KEEP_FROST_AUTO_APPROVE`) are intentionally left unset — Keep runs as a fail-closed FROST co-signer.
-
-Relays default to a single `wss://bucket.coracle.social` (upstream keep-core's default): it reliably delivers the rapid ephemeral kind-24242 events FROST coordination needs, which most general-purpose relays drop. The Configure action requires at least one relay (the bunker will not start with none) and accepts up to 10 — add more known-good relays there for redundancy.
-
----
-
-## Network Access and Interfaces
-
-| Interface        | Port | Protocol | Purpose                                 |
-| ---------------- | ---- | -------- | --------------------------------------- |
-| Web Admin (`ui`) | 8080 | HTTP     | Admin SPA + bearer-authenticated `/api` |
-
-The NIP-46 bunker and FROST signing are **not** bound ports: `keep-web` reaches Nostr relays over outbound WebSocket connections, and clients reach the bunker through those relays using the connection string shown in the Web Admin.
-
-**Access methods:**
-
-- LAN IP with unique port
-- `<hostname>.local` with unique port
-- Tor `.onion` address (if added)
-- Custom domains (if configured)
-
----
-
-## Actions (StartOS UI)
-
-### Set Web Admin Password
-
-Generate or rotate the Web Admin bearer token. On install a critical task prompts you to run it before signing in; re-run any time to rotate.
-
-| Property     | Value                                            |
-| ------------ | ------------------------------------------------ |
-| Availability | Any status                                       |
-| Visibility   | Always visible (also a critical task on install) |
-| Inputs       | None                                             |
-| Outputs      | Username (`admin`) and the generated password    |
-
-### Configure
-
-Set the relays and group Keep uses, then restart to apply.
-
-| Property     | Value                                               |
-| ------------ | --------------------------------------------------- |
-| Availability | Any status                                          |
-| Visibility   | Always visible                                      |
-| Inputs       | Bunker Relays, FROST Relays, Group (npub, optional) |
-| Outputs      | Confirmation; restarts the service                  |
-
----
+**The relay defaults are not a redundancy choice, and adding arbitrary relays is a mistake.** FROST coordination depends on rapid ephemeral events that most general-purpose relays simply drop — a relay that works fine for ordinary Nostr traffic will silently stall signing rounds. The default mirrors upstream's, which is known to deliver them. Add only relays known to carry that event kind.
 
 ## Dependencies
 
-None.
+None. The co-signer reaches its peers and its clients over Nostr relays rather than over anything on this server.
 
----
+## Network Access and Interfaces
 
-## Backups and Restore
+One interface — and the connection that matters most does not go through it.
 
-**Included in backup:**
+| Interface | Id   | Type | Port | Description                                                        |
+| --------- | ---- | ---- | ---- | ------------------------------------------------------------------ |
+| Web Admin | `ui` | ui   | 8080 | Import a share, view the bunker connection, watch signing activity |
 
-- `main` volume — the encrypted vault (`/data/vault`) and `store.json`
+Bound on the `ui-multi` MultiHost over HTTP and not masked.
 
-**Restore behavior:**
+**Nostr clients do not connect to this address.** They reach the co-signer through the NIP-46 bunker, over the relays — so the bunker works from anywhere without this interface being reachable at all, and the interface can stay on a private address.
 
-- The vault and its password are restored together, so your share, kill-switch state, relays, and Web Admin token come back as-is — no re-import or reconfiguration. Init regenerates the vault password only on a fresh install, never on restore.
+Signing peers likewise coordinate over relays, not over any port here.
 
----
+## Installation and First-Run Flow
+
+Install generates the vault password and seeds the defaults, then raises a critical task to set the Web Admin password.
+
+**Until that token is set the application is fail-closed**: it mints a throwaway token of its own, so the admin interface cannot be signed into. The task is what drives the user to set a known one.
+
+After that the sequence is:
+
+1. Set the Web Admin password and sign in.
+2. **Import your share**, exported from wherever the group was created. Nothing works before this — the package holds no key of its own.
+3. Adjust relays if you have known-good ones to add, and connect a Nostr client to the bunker.
+
+## Actions
+
+Two actions.
+
+### Set Web Admin Password
+
+Generates the Web Admin credential and shows it once. Run it when its task appears, or to rotate it.
+
+- **What it changes:** the token in the store, which becomes the application's expected bearer token on restart.
+- **Cost:** the service restarts.
+- **Repeat safety:** each run generates a **new** credential and invalidates the old one.
+- **Outputs:** a fixed username and the generated password. The username is constant and exists so password managers have something to key on — the credential is really the token alone.
+
+### Configure
+
+The two relay lists and the optional group.
+
+- **What it changes:** those fields in the store.
+- **Cost:** the service restarts and reconnects to the new relays.
+- **Repeat safety:** idempotent.
+- **The form enforces at least one relay per list**, and caps both the count and each URL's length to upstream's limits.
+- **Leave the group empty unless you hold shares for more than one.** Empty means "resolve it from the imported share", which is right for the ordinary single-group case.
+
+## Tasks
+
+One, and it is reactive.
+
+| Task                   | Severity   | Raised when                  | Cleared when    |
+| ---------------------- | ---------- | ---------------------------- | --------------- |
+| Set Web Admin Password | `critical` | Any init that finds no token | The action runs |
+
+It is re-evaluated on every init rather than raised once at install, so clearing the token brings the prompt back.
+
+`critical` blocks the service from starting and suspends the ordinary controls.
 
 ## Health Checks
 
-| Check     | Display Name | Method                       | Messages                                                             |
-| --------- | ------------ | ---------------------------- | -------------------------------------------------------------------- |
-| `primary` | Web Admin    | Port-listening check on 8080 | "The Keep admin UI is ready" / "The Keep admin UI is not responding" |
+One check, on the only daemon.
 
----
+| Check     | Displayed as | Method                 |
+| --------- | ------------ | ---------------------- |
+| `primary` | "Web Admin"  | Port 8080 is listening |
+
+It reports that the admin interface is serving. **It says nothing about the things that actually matter here** — whether a share has been imported, whether the bunker is reachable on its relays, or whether signing rounds are completing. Those are visible in the admin interface, and a green check with no imported share is the normal state of a fresh install.
+
+## Backups and Restore
+
+The `main` volume is copied wholesale — `sdk.Backups.ofVolumes('main')`. That is the encrypted vault **and** the password that decrypts it.
+
+**So the backup is equivalent to the share it protects.** Encryption at rest guards the file on disk, not the backup, because both halves travel together — which is what makes a restore work at all, and what makes the backup as sensitive as the key material itself.
+
+A restored instance comes back with its share, its relays, and its Web Admin credential, and rejoins signing rounds without re-importing anything. The vault password is **not** regenerated on restore, which is the whole reason it is generated only at install.
+
+**A share is one of several by design.** Losing this one does not lose the group's key, provided the threshold can still be met from the other holders — that is the point of FROST, and it is the fallback if this backup is ever lost.
 
 ## Limitations and Differences
 
-1. **x86_64 only** — `keep-web` is built for x86_64; there is no aarch64 or riscv64 image.
-2. **Requires an existing FROST group** — this package imports shares; it does not run key generation. Create the group and export a share elsewhere (the Keep CLI or desktop app) first. The Keep Android app also holds a share rather than generating the group.
-3. **Co-signing is off by default** — fail-closed; enable it with the Web Admin kill switch.
-4. **Share import is Web-Admin-only** — the upstream CLI and enclave paths are not exposed; import in setup mode, then restart so the co-signer starts.
-
----
-
-## What Is Unchanged from Upstream
-
-- FROST threshold signing and distributed key generation coordinated over Nostr relays
-- NIP-46 bunker remote signing for any compatible Nostr client
-- The `keep-web` admin SPA and its bearer-authenticated `/api` surface
-- Argon2id + XChaCha20-Poly1305 vault encryption with keys zeroized in RAM
-- The co-signing kill switch and live signing-activity feed
-
----
-
-## Contributing
-
-Build and development workflow follow the StartOS packaging guide: <https://docs.start9.com/packaging>. Keep `README.md`, `instructions.md`, and `AGENTS.md` in sync with any change to user-visible behavior or package structure.
+1. **The backup carries both the vault and its password**, so it is as sensitive as the share.
+2. **No key generation.** The group is created elsewhere and a share imported here.
+3. **Relay choice is consequential.** Most general-purpose relays drop the ephemeral events FROST needs, and a bad relay stalls signing silently.
+4. **x86_64 only.**
+5. **The health check does not observe signing.** A green service can be entirely idle or unable to reach its peers.
+6. **The vault password is never shown and never rotated**, deliberately — rotating it would orphan the vault.
+7. **The admin interface is a bearer token, with a cosmetic username.**
 
 ---
 
@@ -203,27 +181,32 @@ Build and development workflow follow the StartOS packaging guide: <https://docs
 
 ```yaml
 package_id: keep
-architectures: [x86_64]
-image: keep (built from source; keep-web crate + Svelte SPA)
+image: built from ./Dockerfile
+architectures:
+  - x86_64
+subcontainers:
+  - keep-cosigner
 volumes:
-  main: /data
-ports:
-  ui: 8080
-dependencies: none
+  main: /data # the encrypted vault, plus start9/store.json
+file_models:
+  - start9/store.json # the whole configuration surface
 startos_managed_env_vars:
   - KEEP_PATH
   - KEEP_WEB_LISTEN
   - KEEP_WEB_UI_DIR
   - KEEP_PASSWORD
-  - KEEP_WEB_AUTH_TOKEN
   - KEEP_BUNKER_RELAY
   - KEEP_FROST_RELAY
-  - KEEP_FROST_GROUP
+  - KEEP_WEB_AUTH_TOKEN # only once the action has set one
+  - KEEP_FROST_GROUP # only when explicitly set
+dependencies: []
+interfaces:
+  ui: { type: ui, port: 8080 } # Nostr clients reach the bunker over relays, not here
 actions:
-  - set-web-admin-password
   - configure
+  - set-web-admin-password
+tasks:
+  - { action: set-web-admin-password, severity: critical } # reactive
 health_checks:
-  - primary: port_check 8080
-backup_volumes:
-  - main
+  - primary # displayed "Web Admin"; observes the interface only
 ```
