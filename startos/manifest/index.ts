@@ -22,5 +22,4 @@ export const manifest = setupManifest({
       arch: ['x86_64'],
     },
   },
-  dependencies: {},
 })

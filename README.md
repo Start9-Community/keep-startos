@@ -120,7 +120,7 @@ Generates the Web Admin credential and shows it once. Run it when its task appea
 
 - **What it changes:** the token in the store, which becomes the application's expected bearer token on restart.
 - **Cost:** the service restarts.
-- **Repeat safety:** each run generates a **new** credential and invalidates the old one.
+- **Repeat safety:** each run generates a **new** credential and invalidates the old one. Once a credential exists, the action asks for confirmation before replacing it; the first run does not.
 - **Outputs:** a fixed username and the generated password. The username is constant and exists so password managers have something to key on — the credential is really the token alone.
 
 ### Configure

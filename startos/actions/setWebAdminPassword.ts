@@ -11,12 +11,16 @@ import { ADMIN_USERNAME } from '../utils'
 export const setWebAdminPassword = sdk.Action.withoutInput(
   'set-web-admin-password',
 
-  async () => ({
+  async ({ effects }) => ({
     name: i18n('Set Web Admin Password'),
     description: i18n(
       'Generate a new random password to sign in to the Keep Web Admin. Run this again at any time to rotate it; the current password is replaced.',
     ),
-    warning: null,
+    warning: (await storeJson.read((s) => s.webAuthToken).const(effects))
+      ? i18n(
+          'Replaces the current Web Admin password. The old password stops working, and Keep restarts if it is running.',
+        )
+      : null,
     // Runnable while running or stopped: main reads the token reactively, so a
     // running service restarts onto the new token; a stopped one loads it on
     // next start.
