@@ -102,7 +102,7 @@ Signing peers likewise coordinate over relays, not over any port here.
 
 Install generates the vault password and seeds the defaults, then raises a critical task to set the Web Admin password.
 
-**Until that token is set the application is fail-closed**: it mints a throwaway token of its own, so the admin interface cannot be signed into. The task is what drives the user to set a known one.
+**Until that token is set the application is fail-closed**: keep-web generates a token of its own once and persists it at `/data/vault/auth_token`, but StartOS never shows it, so the admin interface cannot be signed into. The task is what drives the user to set a known one.
 
 After that the sequence is:
 

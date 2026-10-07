@@ -32,8 +32,9 @@ export const main = sdk.setupMain(async ({ effects }) => {
     KEEP_FROST_RELAY: frostRelays.join(','),
   }
   // The Web Admin bearer token is set by the Set/Reset Web Admin Password
-  // action. Until then it is unset and keep-web stays fail-closed (it mints a
-  // throwaway token); the critical task drives the user to set a known one.
+  // action. Until then it is unset, and keep-web generates its own token once and
+  // persists it at /data/vault/auth_token; StartOS never shows it, so the admin
+  // interface stays closed until the critical task drives the user to set one.
   // Reactive store read above means setting it restarts the daemon onto it.
   if (store.webAuthToken) env.KEEP_WEB_AUTH_TOKEN = store.webAuthToken
   // Optional explicit group; otherwise keep-web auto-resolves from the share.

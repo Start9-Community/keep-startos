@@ -26,4 +26,4 @@ verified, tried, and decided belongs in the commit message and the PR body.
 
 ## This repo
 
-- **The Web Admin credential is a bearer token; the username is cosmetic.** `ADMIN_USERNAME` exists so password managers have a field to key on. Leaving the token unset is deliberate fail-closed behavior — keep-web mints a throwaway one — and the critical task is what drives the user to set a known value.
+- **The Web Admin credential is a bearer token; the username is cosmetic.** `ADMIN_USERNAME` exists so password managers have a field to key on. Leaving the token unset is deliberate fail-closed behavior: keep-web generates a token once and persists it at `/data/vault/auth_token`, which StartOS never shows, and the critical task is what drives the user to set a known value.
