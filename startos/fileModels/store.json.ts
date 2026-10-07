@@ -4,7 +4,7 @@ import { defaultRelays } from '../utils'
 
 // Package-internal state. Written only by our init + actions, so .const()
 // gives automatic restart-on-change.
-const storeConfigSchema = z.object({
+const storeConfigSchema = z.looseObject({
   // Generated once at install; encrypts the Keep vault at rest.
   vaultPassword: z.string().catch(''),
   // Bearer token for the Web Admin login. Unset until the user runs the

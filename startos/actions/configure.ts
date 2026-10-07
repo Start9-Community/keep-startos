@@ -11,8 +11,9 @@ const { InputSpec, Value, List } = sdk
 // caught in a regex; upstream rejects those at connect time.
 const relayPattern = {
   regex: '^wss://[^\\s@]+$',
-  description:
+  description: i18n(
     'Must be a wss:// relay URL with no spaces, e.g. wss://relay.example.com',
+  ),
 }
 
 const inputSpec = InputSpec.of({

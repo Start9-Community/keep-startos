@@ -24,6 +24,8 @@ export default {
     19: 'Usuario',
     20: 'Contraseña',
     21: 'Establece tu contraseña de administración web de Keep y luego inicia sesión.',
+    22: 'Debe ser una URL de relé wss:// sin espacios, p. ej. wss://relay.example.com',
+    23: 'Reemplaza la contraseña actual de administración web. La contraseña anterior deja de funcionar y Keep se reinicia si está en ejecución.',
   },
   de_DE: {
     0: 'Keep-Mitunterzeichner wird gestartet',
@@ -48,6 +50,8 @@ export default {
     19: 'Benutzername',
     20: 'Passwort',
     21: 'Legen Sie Ihr Keep-Web-Administrationspasswort fest und melden Sie sich dann an.',
+    22: 'Muss eine wss://-Relay-URL ohne Leerzeichen sein, z. B. wss://relay.example.com',
+    23: 'Ersetzt das aktuelle Web-Administrationspasswort. Das alte Passwort funktioniert nicht mehr, und Keep wird neu gestartet, falls es läuft.',
   },
   pl_PL: {
     0: 'Uruchamianie współsygnatariusza Keep',
@@ -72,6 +76,8 @@ export default {
     19: 'Nazwa użytkownika',
     20: 'Hasło',
     21: 'Ustaw hasło panelu administracyjnego Keep, a następnie zaloguj się.',
+    22: 'Musi to być adres URL przekaźnika wss:// bez spacji, np. wss://relay.example.com',
+    23: 'Zastępuje obecne hasło panelu administracyjnego. Stare hasło przestaje działać, a Keep zostanie ponownie uruchomiony, jeśli działa.',
   },
   fr_FR: {
     0: 'Démarrage du cosignataire Keep',
@@ -96,5 +102,7 @@ export default {
     19: "Nom d'utilisateur",
     20: 'Mot de passe',
     21: "Définissez votre mot de passe d'administration web de Keep, puis connectez-vous.",
+    22: 'Doit être une URL de relais wss:// sans espaces, par ex. wss://relay.example.com',
+    23: "Remplace le mot de passe d'administration web actuel. L'ancien mot de passe cesse de fonctionner, et Keep redémarre s'il est en cours d'exécution.",
   },
 } satisfies Record<string, LangDict>

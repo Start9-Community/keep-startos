@@ -42,7 +42,7 @@ Point any NIP-46 ("bunker") capable Nostr client at the connection string shown 
 
 ### Actions
 
-- **Set Web Admin Password** — generate or rotate the Web Admin password. Surfaced as a critical task on a fresh install.
+- **Set Web Admin Password** — generate or rotate the Web Admin password. Surfaced as a critical task on a fresh install. Rotating asks you to confirm first, because the old password stops working.
 - **Configure** — set the relays and group Keep uses:
   - **Bunker Relays** — where Nostr clients reach this signer over NIP-46. Pre-filled with `wss://bucket.coracle.social`; keep at least one.
   - **FROST Relays** — where signing rounds are coordinated with your other devices; these must match the relays your other devices use. Pre-filled with `wss://bucket.coracle.social`, which reliably carries the rapid FROST signing traffic that most general-purpose relays drop; keep at least one.

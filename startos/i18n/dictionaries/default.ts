@@ -21,6 +21,7 @@ const dict = {
   'Optional: the FROST group to co-sign for. Leave blank to auto-detect from the imported share.': 12,
   'Configuration saved': 13,
   'The service is restarting with the new settings.': 14,
+  'Must be a wss:// relay URL with no spaces, e.g. wss://relay.example.com': 22,
 
   // actions/setWebAdminPassword.ts
   'Set Web Admin Password': 15,
@@ -29,6 +30,7 @@ const dict = {
   'Use this password to sign in to the Keep Web Admin.': 18,
   Username: 19,
   Password: 20,
+  'Replaces the current Web Admin password. The old password stops working, and Keep restarts if it is running.': 23,
 
   // init/watchCredentials.ts
   'Set your Keep Web Admin password, then sign in.': 21,
