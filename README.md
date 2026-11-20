@@ -174,6 +174,7 @@ A restored instance comes back with its share, its relays, and its Web Admin cre
 5. **The health check does not observe signing.** A green service can be entirely idle or unable to reach its peers.
 6. **The vault password is never shown and never rotated**, deliberately — rotating it would orphan the vault.
 7. **The admin interface is a bearer token, with a cosmetic username.**
+8. **Relay certificate keys are pinned on first use, and nothing here clears a pin.** Keep records each `wss` relay's SPKI hash in `cert-pins.json` in the vault directory (`/data/vault`, so it is backed up and restored) and refuses a relay whose key later differs; the refusal is logged and listed in the Web Admin's signing log. `KEEP_STRICT_CERT_PINNING` is not set, so a relay with no recorded pin is still trusted on its first connection. The only way past a refused relay from StartOS is a different relay; removing its entry from `cert-pins.json` takes shell access to the volume.
 
 ---
 
