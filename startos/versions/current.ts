@@ -8,7 +8,7 @@ export const current = VersionInfo.of({
 **Security**
 
 - Fixes a FROST nonce flaw: a randomness source that replayed the same bytes could make Keep commit to the same signing nonce in two sessions, and nonce reuse can expose the key share. Every nonce draw is now mixed with a counter, the process id and the clock, so a replayed sequence no longer repeats a nonce.
-- Keep now remembers each relay's certificate key the first time it connects and refuses that relay if the key later changes. A refusal is listed in the Web Admin's signing log.
+- Keep now remembers each relay's certificate key the first time it connects and refuses that relay if the key later changes. With a share configured, a failed relay check during startup prevents the service and Web Admin from starting, even if other relays work. Check the service logs in StartOS and remove or replace the failed relay in Configure; update the other group members too when changing FROST relays. StartOS cannot clear a remembered key.
 - An interrupted revoke of a NIP-46 client no longer lets that client's permissions come back on the next start.
 
 **Changes**
@@ -23,7 +23,7 @@ Full release notes: [0.12.3](https://github.com/privkeyio/keep/releases/tag/v0.1
 **Seguridad**
 
 - Corrige un fallo en los nonces FROST: una fuente de aleatoriedad que repetía los mismos bytes podía hacer que Keep se comprometiera con el mismo nonce de firma en dos sesiones, y reutilizar un nonce puede exponer la parte de la clave. Ahora cada nonce se mezcla con un contador, el id del proceso y el reloj, de modo que una secuencia repetida ya no repite un nonce.
-- Keep recuerda ahora la clave del certificado de cada relay la primera vez que se conecta y rechaza ese relay si la clave cambia después. Cada rechazo aparece en el registro de firmas de la Web Admin.
+- Keep recuerda ahora la clave del certificado de cada relay la primera vez que se conecta y rechaza ese relay si la clave cambia después. Con una parte de clave configurada, un fallo al comprobar un relay durante el inicio impide que arranquen el servicio y la Web Admin, aunque funcionen otros relays. Consulta los registros del servicio en StartOS y elimina o sustituye el relay que falla en Configure; actualiza también los otros miembros del grupo si cambias los relays FROST. StartOS no puede borrar una clave recordada.
 - Una revocación interrumpida de un cliente NIP-46 ya no permite que los permisos de ese cliente vuelvan en el siguiente inicio.
 
 **Cambios**
@@ -38,7 +38,7 @@ Notas de la versión completas: [0.12.3](https://github.com/privkeyio/keep/relea
 **Sicherheit**
 
 - Behebt einen Fehler bei FROST-Nonces: Eine Zufallsquelle, die dieselben Bytes wiederholte, konnte Keep in zwei Sitzungen auf dieselbe Signatur-Nonce festlegen, und eine wiederverwendete Nonce kann den Schlüsselanteil offenlegen. Jede Nonce wird jetzt mit einem Zähler, der Prozess-ID und der Uhrzeit gemischt, sodass eine wiederholte Folge keine Nonce mehr wiederholt.
-- Keep merkt sich jetzt den Zertifikatsschlüssel jedes Relays bei der ersten Verbindung und lehnt das Relay ab, wenn sich der Schlüssel später ändert. Jede Ablehnung steht im Signaturprotokoll der Web Admin.
+- Keep merkt sich jetzt den Zertifikatsschlüssel jedes Relays bei der ersten Verbindung und lehnt das Relay ab, wenn sich der Schlüssel später ändert. Mit einem konfigurierten Schlüsselanteil verhindert eine fehlgeschlagene Relay-Prüfung beim Start den Start des Dienstes und der Web Admin, selbst wenn andere Relays funktionieren. Prüfen Sie die Dienstprotokolle in StartOS und entfernen oder ersetzen Sie das betroffene Relay in Configure; passen Sie bei geänderten FROST-Relays auch die anderen Gruppenmitglieder an. StartOS kann einen gespeicherten Schlüssel nicht löschen.
 - Ein unterbrochener Widerruf eines NIP-46-Clients lässt dessen Berechtigungen beim nächsten Start nicht mehr zurückkehren.
 
 **Änderungen**
@@ -53,7 +53,7 @@ Vollständige Versionshinweise: [0.12.3](https://github.com/privkeyio/keep/relea
 **Bezpieczeństwo**
 
 - Naprawia błąd nonce FROST: źródło losowości powtarzające te same bajty mogło sprawić, że Keep zobowiązywał się do tego samego nonce podpisu w dwóch sesjach, a ponowne użycie nonce może ujawnić udział klucza. Każde losowanie nonce jest teraz mieszane z licznikiem, identyfikatorem procesu i zegarem, więc powtórzona sekwencja nie powtarza już nonce.
-- Keep zapamiętuje teraz klucz certyfikatu każdego przekaźnika przy pierwszym połączeniu i odrzuca ten przekaźnik, jeśli klucz później się zmieni. Każde odrzucenie widać w dzienniku podpisów w Web Admin.
+- Keep zapamiętuje teraz klucz certyfikatu każdego przekaźnika przy pierwszym połączeniu i odrzuca ten przekaźnik, jeśli klucz później się zmieni. Gdy skonfigurowano udział klucza, nieudane sprawdzenie przekaźnika przy starcie uniemożliwia uruchomienie usługi i Web Admin, nawet jeśli inne przekaźniki działają. Sprawdź dzienniki usługi w StartOS i usuń lub zastąp wadliwy przekaźnik w Configure; przy zmianie przekaźników FROST zaktualizuj także pozostałych członków grupy. StartOS nie może usunąć zapamiętanego klucza.
 - Przerwane unieważnienie klienta NIP-46 nie pozwala już, by uprawnienia tego klienta wróciły przy następnym uruchomieniu.
 
 **Zmiany**
@@ -68,7 +68,7 @@ Pełne informacje o wydaniu: [0.12.3](https://github.com/privkeyio/keep/releases
 **Sécurité**
 
 - Corrige une faille des nonces FROST : une source d'aléa qui rejouait les mêmes octets pouvait amener Keep à s'engager sur le même nonce de signature dans deux sessions, et la réutilisation d'un nonce peut exposer la part de clé. Chaque tirage de nonce est désormais mélangé à un compteur, à l'identifiant du processus et à l'horloge, si bien qu'une séquence rejouée ne répète plus de nonce.
-- Keep mémorise désormais la clé du certificat de chaque relais à la première connexion et refuse ce relais si la clé change ensuite. Chaque refus apparaît dans le journal de signature de la Web Admin.
+- Keep mémorise désormais la clé du certificat de chaque relais à la première connexion et refuse ce relais si la clé change ensuite. Avec une part de clé configurée, un échec de vérification d'un relais au démarrage empêche le service et la Web Admin de démarrer, même si d'autres relais fonctionnent. Consultez les journaux du service dans StartOS et supprimez ou remplacez le relais défaillant dans Configure ; mettez aussi à jour les autres membres du groupe si vous changez les relais FROST. StartOS ne peut pas effacer une clé mémorisée.
 - Une révocation interrompue d'un client NIP-46 ne permet plus aux autorisations de ce client de revenir au démarrage suivant.
 
 **Changements**
